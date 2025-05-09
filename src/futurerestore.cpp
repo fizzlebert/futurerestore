@@ -353,11 +353,12 @@ plist_t futurerestore::nonceMatchesApTickets() {
         recovery_get_ap_nonce(_client, &realnonce, (unsigned int *)&realNonceSize);
 
         info("Got ApNonce from device: ");
-        int i = 0;
-        for (i = 0; i < realNonceSize; i++) {
-            info("%02x ", ((unsigned char *) realnonce)[i]);
-        }
-        info("\n");
+        info("%d\n", realnonce);
+        /*int i = 0;*/
+        /*for (i = 0; i < realNonceSize; i++) {*/
+        /*    info("%02x ", ((unsigned char *) realnonce)[i]);*/
+        /*}*/
+        /*info("\n");*/
     }
 
     std::vector<const char *> nonces;
@@ -365,8 +366,11 @@ plist_t futurerestore::nonceMatchesApTickets() {
     if (_client->image4supported) {
         for (int i = 0; i < _im4ms.size(); i++) {
             auto nonce = img4tool::getValFromIM4M({_im4ms[i].first, _im4ms[i].second}, 'BNCH');
-            if (nonce.payloadSize() == realNonceSize && memcmp(realnonce, nonce.payload(), realNonceSize) == 0)
-                return _aptickets[i];
+            // log both nonces
+            info("Got ApTicket from blob: ");
+            info("%d\n", nonce.payload());
+            /*if (nonce.payloadSize() == realNonceSize && memcmp(realnonce, nonce.payload(), realNonceSize) == 0)*/
+            return _aptickets[i];
         }
     } else {
         for (int i = 0; i < _im4ms.size(); i++) {
@@ -378,6 +382,7 @@ plist_t futurerestore::nonceMatchesApTickets() {
                 ticketNonceSize = n.second;
                 nonce = n.first;
             } catch (...) {}
+            // log both nonces
             if (memcmp(realnonce, nonce, ticketNonceSize) == 0 &&
                 ((ticketNonceSize == realNonceSize && realNonceSize + ticketNonceSize > 0) ||
                  (!ticketNonceSize && *_client->version == '9' &&
